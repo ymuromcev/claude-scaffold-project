@@ -56,6 +56,47 @@ first task, conventions documented for both you and Claude Code, and
 hooks into [claude-dev-workflow](https://github.com/ymuromcev/claude-dev-workflow)
 for the rest of development.
 
+## Back-fill mode (for projects that already have a CLAUDE.md)
+
+Sometimes you start a project before adopting `scaffold-project`, and
+later want to add the same dev scaffolding (backlog as a DB, RFC
+folder, incident log, changelog) — without rewriting the project's
+existing `CLAUDE.md` or content.
+
+Triggers (Russian): «причеши проект», «оформи как dev-проект»,
+«back-fill бэклог», «добавь дев-обвязку», or
+`/scaffold-project --backfill`.
+
+What it does:
+
+1. Detects `CLAUDE.md` is already present — switches into back-fill
+   mode instead of refusing.
+2. Scans for missing dev scaffolding and prints a checklist:
+   ```
+   ✓ CHANGELOG.md
+   + private/backlog/_README.md
+   + private/backlog.base
+   ~ .gitignore (will append private/ block)
+   ⚠ private/backlog/BL-3.md has non-canonical `area:` field — won't touch
+   ```
+3. Shows a preview of additions only, asks one yes/no.
+4. On approve: writes only the missing files, merges `.gitignore` by
+   appending (never reorders or deletes), proposes a commit message,
+   asks before committing.
+
+What it explicitly **does not** do:
+
+- Overwrite existing files (`CLAUDE.md`, `README.md`, etc.).
+- Create the `BL-1` "scaffold" task — your project has its own backlog.
+- Migrate a legacy `BACKLOG.md` into `private/backlog/BL-NN.md` (that's
+  a separate task).
+- Normalize the frontmatter of existing `BL-NN.md` files — flags them
+  but doesn't touch them.
+- Run `git init` or install stack extensions (`node-cli`, `python-mcp`).
+
+If everything is already in place, it prints "all in place, nothing
+to do" and exits without touching anything.
+
 ## The feedback loop (the actual interesting part)
 
 The non-obvious feature: when you're working inside *any* project and

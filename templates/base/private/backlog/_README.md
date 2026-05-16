@@ -1,41 +1,130 @@
-# Backlog
+# Backlog conventions
 
-Per-task files. **Gitignored** (`private/` in `.gitignore`).
+Здесь лежит «что делаем потом». Один таск = один файл `BL-NN.md`. Этот каталог gitignored (`private/` в `.gitignore`).
 
-## File format
+Префикс `_README` — чтобы файл сортировался наверх и пропадал из Dataview / Bases / любых запросов вида «все BL-задачи в папке» (фильтрация по префиксу `BL-`).
 
-`BL-NN-short-slug.md`, sequential, two digits.
+Просмотр через **Obsidian Bases**: открой `private/backlog.base` — там готовые view'хи (Active / Archived / Cards). Добавляй кастомные view-фильтры по тегам версий, если нужно (например, `mvp-0`, `v0.5`, `v1.0`).
 
-## Required sections
+---
 
+## Имя файла
+
+Стандарт: `BL-NN.md` (только номер, нумерация сквозная). Заголовок живёт в frontmatter, не в имени.
+
+---
+
+## Frontmatter
+
+Обязательные поля:
+
+```yaml
+---
+id: BL-NN
+title: "..."
+status: open | in_progress | done | archived
+priority: P0 | P1 | P2 | P3
+tier: XS | M | L
+created: YYYY-MM-DD
+tags: [...]
+---
 ```
-# BL-NN — Title
 
-**Status:** open | in-progress | blocked | done
-**Created:** YYYY-MM-DD
-**Tier:** XS | M | L (per dev-workflow)
+Опциональные:
 
-## Что хочется получить
-User-level outcome (per ~/.claude/CLAUDE.md rule about pre-code).
+- `closed: YYYY-MM-DD` — обязательно при `status: done` или `status: archived`.
+- `refs: [BL-X, BL-Y]` — связанные / blocking / follow-up таски.
+- `blocked_by: [BL-X]` — если статус `blocked`.
+
+---
+
+## Статусы (только эти 4)
+
+| status | когда | что значит |
+| --- | --- | --- |
+| `open` | заведён, ждёт обсуждения / согласования образа / старта | можно перейти в `in_progress` или `archived` |
+| `in_progress` | активно делается | можно перейти в `done` или вернуться в `open` |
+| `done` | цель достигнута, закрыто | финальное состояние; `closed:` обязателен |
+| `archived` | отменён, заменён, устарел | финальное состояние; `closed:` обязателен; в Notes — почему |
+
+Других значений (`planned`, `wip`, `dropped`, …) — не используем.
+
+---
+
+## Tags для roadmap
+
+Версии кодируются через теги (например, `mvp-0`, `v0.5`, `v1.0`, `v2.0`). Фильтруй в `backlog.base` view'хах. Не плоди отдельных полей под версии — теги достаточно.
+
+---
+
+## Структура тела
+
+Рекомендованные секции (не все обязательны для каждого таска):
+
+- `## Context` — почему задача появилась.
+- `## Plan` — что сделать.
+- `## Definition of Done` — критерии завершения.
+- `## Notes` / `## NOT in scope` / `## Open questions` — по необходимости.
+- `## Progress` — ведём по ходу: что сделано на каком шаге, в каких коммитах, что протестировано.
+
+---
+
+## Правила работы
+
+1. **До кода**: формулируем user-level образ результата → согласовываем с пользователем → потом код. Образ результата записан в `## Plan` ИЛИ отдельным сообщением в чате с явным «ОК».
+
+2. **В диалоге**: user-level стиль. Тех. детали (имена функций, флаги, файлы) — только когда без них пользователь не может проверить или повторить, или когда явно спрашивает.
+
+3. **На каждом шаге**: `## Progress` обновляется сразу — что сделано, в каком коммите.
+
+4. **При закрытии**:
+   - `status: done` (или `archived` с причиной).
+   - `closed: YYYY-MM-DD`.
+   - В `## Plan` пройтись по буллетам, отметить ✅.
+   - Всё, что всплыло во время работы и не вошло в DOD — выносим в новый BL и ссылаемся через `refs:`.
+
+5. **Если что-то всплыло во время работы** — заводим новый BL **сейчас**, не «запомню в голове». Любой шаг, не записанный в BL, не существует.
+
+---
+
+## Поиск
+
+- Активные: `grep -lE '^status: (open|in_progress)$' BL-*.md`.
+- Закрытые: `grep -lE '^status: (done|archived)$' BL-*.md`.
+- По тегу: `grep -l 'tags:.*mvp-0' BL-*.md`.
+- Obsidian Bases: открыть `private/backlog.base`.
+
+---
+
+## Шаблон нового BL
+
+Скопируй `BL-1.md.tpl` (рядом) и переименуй в `BL-NN.md`. Или вручную:
+
+```markdown
+---
+id: BL-NN
+title: "..."
+status: open
+priority: P2
+tier: XS
+created: YYYY-MM-DD
+refs: []
+tags: []
+---
+
+## Context
+
+…
 
 ## Plan
-Stepwise plan.
 
-## DOD
-Checkboxes — when this is "done".
+- …
 
-## Progress
-Append as we work.
+## Definition of Done
 
-## Done
-Final state — what was actually shipped.
+- …
+
+## NOT in scope
+
+- …
 ```
-
-## Closing
-
-When status moves to `done`:
-- check all DOD boxes,
-- write Progress → Done summary,
-- mention follow-ups as separate BL-files (link them).
-
-См. `~/.claude/CLAUDE.md` секцию «Закрытие задач во внешнем трекере».
